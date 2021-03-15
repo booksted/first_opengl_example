@@ -8,6 +8,21 @@ void OnFramebufferSizeChange(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+void OnKeyEvent(GLFWwindow* window,
+    int key, int scancode, int action, int mods) {
+    SPDLOG_INFO("key: {}, scancode: {}, action: {}, mods: {}{}{}",
+        key, scancode,
+        action == GLFW_PRESS ? "Pressed" :
+        action == GLFW_RELEASE ? "Released" :
+        action == GLFW_REPEAT ? "Repeat" : "Unknown",
+        mods & GLFW_MOD_CONTROL ? "C" : "-",
+        mods & GLFW_MOD_SHIFT ? "S" : "-",
+        mods & GLFW_MOD_ALT ? "A" : "-");
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, true);
+    }
+}
+
 int main(int argc, const char** argv) {
     // 시작을 알리는 로그
     SPDLOG_INFO("Start program");
@@ -48,12 +63,19 @@ if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 auto glVersion = glGetString(GL_VERSION);
 SPDLOG_INFO("OpenGL context version: {}", glVersion);
 
+// 추가된 내용
+OnFramebufferSizeChange(window, WINDOW_WIDTH, WINDOW_HEIGHT);
 glfwSetFramebufferSizeCallback(window, OnFramebufferSizeChange);
+glfwSetKeyCallback(window, OnKeyEvent);
 
         // glfw 루프 실행, 윈도우 close 버튼을 누르면 정상 종료
     SPDLOG_INFO("Start main loop");
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
+        glClearColor(0.0f, 0.5f, 0.3f, 0.0f); // 화면 색상지정
+        glClear(GL_COLOR_BUFFER_BIT); // 프레임버퍼 클리어
+        glfwSwapBuffers(window);
+        // front, back 뒤에먼저 그리고 앞으보이는 식 back->fornt 반복 // 더블 버퍼!
     }
     glfwTerminate();
     
